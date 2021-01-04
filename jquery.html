@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>JQuery </title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        
+        
+        <script>
+            $(document).ready(function(){
+                const dropdown=$('#users');
+                const posts=$('#posts');
+
+
+                //Get user from API
+                let url='http://jsonplaceholder.typicode.com/users';
+                $.getJSON(url,function(data){
+                    $.each(data,function(key,entry){
+                        dropdown.append($('<option></option>').attr('value',entry.id).text(entry.name));
+                    })
+                })
+
+                          
+                    
+            
+
+                //Get User Posts from dropdown
+                dropdown.change(function(){
+                    let url = 'http://jsonplaceholder.typicode.com/posts';
+                    $.getJSON(url,function(data){ 
+                    
+                       $.each(data,function(key,entry){
+                            if(dropdown.children('option:selected').val()==entry.userId){ 
+                                let article= $('<article>').attr("id",`${entry.id}`);
+                                  posts.append(article);
+                                article.append($('<h2></h2>').attr("id","usertitle").text(entry.title));
+                                article.append($('<p></p>').attr("id","userbody").text(entry.body));
+                               
+                                article.append($('<button>').attr({class:"btn btn-primary update","data-id":`${entry.id}`}).text('Update'));
+                                article.append($('<button>').attr({class:"btn btn-primary", id:"delete"}).text("delete")); 
+                            }
+                            
+                          })
+                          loadButton();    
+                            
+                  })
+                });
+
+              
+
+                
+                function getOnePost(id){
+
+                  //let url = 'http://jsonplaceholder.typicode.com/posts';
+                      //$.getJSON(url,function(data){
+
+                         let userTitle =$('#usertitle').text();
+                         let userBody=$('#userbody').text();
+                        
+                            $('#postId').val($('article').attr("id"));
+                            $('#postTitle').val(userTitle);
+                            $('#postBody').val(userBody);
+                            //$('#postuserid').val(data.userId);
+                            $('#postModal').modal('show');
+                            
+                        
+                      //});
+                }
+                    
+                      
+                         
+                            
+                 
+
+              
+
+
+                //Post new User Posts
+                const add=$('.save');
+                const title= $('#title');
+                const body= $('#body');
+                const userId= $('#userId');
+
+                add.click(function(){
+                  let url = 'https://jsonplaceholder.typicode.com/posts';
+                  let posting =$.post(url, {title: title.val(), body: body.val(),userId: userId.val()} );
+                  posting.done(function(data){
+                    posts.append($('<h2></h2>').attr("class","usertitle").text(data.title));
+                    posts.append($('<p></p>').attr("class","userbody").text(data.body));
+                   
+                      posts.append($('<button>').attr({class:"btn btn-primary update","data-id": entry.id}).text('Update'));
+
+                  })
+                    
+                                                        
+                    //console.log(data.title);
+                  
+                });
+
+
+
+
+                //update the Posts
+
+               
+                function loadButton(){
+                  $('.update').click(function(){
+
+                        //getOnePost($('article').attr("data-id"));
+                        getOnePost($(this).attr("data-id"));
+
+
+
+                      })
+                }
+
+
+
+
+                
+                const postTitle=$('#postTitle');
+                const postBody=$('#postBody');
+                
+
+
+
+
+
+               /* function updateData(id,data){
+                    $.ajax({
+                      url:'https://jsonplaceholder.typicode.com/posts/'+id,
+                      method:'PUT',
+                      dataType:'json',
+                      data: data,
+                      success: function(data){
+                        
+                       //getResponce();
+                        console.log(data);
+                        
+                        
+                      }
+                    })
+                  }*/
+
+                  $('.changes').on('click',function(){
+
+                    var patch = {
+                        "title" : `${postTitle.val()}`,
+                        "body"  :  `${postBody.val()}`
+                    }
+                    let newUrl = 'https://jsonplaceholder.typicode.com/posts';
+                    let Id =`${$('article').attr('id')}`;
+                    $.ajax({
+                      type: 'PATCH',
+                      url: `${newUrl}/${Id}`,
+                      data: JSON.stringify(patch),
+                      processData: false,
+                      contentType: 'application/merge-patch+json',
+                      success: (data)=>{
+                        //$('#usertitle').text(`${data.title}`);
+                        //$('#userbody').text(`${data.body}`);
+
+                        console.log(data);
+
+                      }
+                      
+                        
+                        //console.log('post updated');
+                      
+                     
+                    });
+                    
+                            
+                           /* let data={
+                                    id:postId.val(),
+                                    title:postTitle.val() ,
+                                    body:postBody.val(),                    
+                                  }
+                                  updateData(data.id,data);*/
+                                });
+
+                      $('#delete').click(function(){
+
+                        let newUrl = 'https://jsonplaceholder.typicode.com/posts';
+                        let Id =`${$('article').attr('id')}`;
+                        $.ajax({
+                          type: 'DELETE',
+                          url: `${newUrl}/${Id}`,
+                        })
+                      })
+
+
+
+            });
+        </script>
+
+    </head>
+
+
+    <body>
+        <div>
+            <section>
+                <select id="users">
+
+                </select>
+            </section>
+
+            <section id="posts">
+
+
+<!-- Modal -->
+<div class="modal fade" id="postModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="number" id="postId" placeholder="Id">
+        <br />
+        <input type="text" id="postTitle" placeholder="title">
+        <br />
+        <input type="text" id="postBody" placeholder="body">
+        <br />
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary changes">Update changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+            </section>
+        </div>
+
+        <br />
+
+
+        <div>
+            <!-- BoxModal to add a new post -->
+
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+            Add Post
+          </button> 
+          
+          <!-- Modal -->
+          <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+
+                    <input type="text" id="title" placeholder="title">
+                    <br />
+                    <input type="text" id="body" placeholder="body">
+                    <br />
+                    <input type="number" id="userId" placeholder="userId" min="1">
+
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary save">Save changes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        
+    </body>
+</html>
